@@ -1,6 +1,11 @@
 gradio>=4.44.0
-pandas
-numpy
-pyarrow
-joblib
-xgboost
+pandas>=2.2.2
+numpy>=1.26.4
+pyarrow>=16.1.0
+joblib>=1.4.2
+xgboost>=2.0.3
+shap>=0.44.0
+matplotlib>=3.8.4
+Pillow>=10.3.0
+folium>=0.16.0
+SQLAlchemy>=2.0.29
