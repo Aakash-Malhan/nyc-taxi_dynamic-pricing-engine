@@ -1,0 +1,6 @@
+gradio>=4.44.0
+pandas
+numpy
+pyarrow
+joblib
+xgboost
