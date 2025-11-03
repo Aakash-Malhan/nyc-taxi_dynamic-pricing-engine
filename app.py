@@ -16,7 +16,7 @@ from PIL import Image
 
 warnings.filterwarnings("ignore")
 
-# ---------------- Paths ----------------
+# Paths
 DATA_DIR = Path("data")
 P = {
     "features": DATA_DIR / "zone_hour_features.parquet",
@@ -28,14 +28,13 @@ P = {
     "model": DATA_DIR / "zone_hour_surge_xgb.joblib",  # <- correct name (no extra 's')
 }
 
-# ---------------- Load artifacts ----------------
+# Load artifacts
 features = pd.read_parquet(P["features"])
 basefare = pd.read_parquet(P["basefare"])
 agg = pd.read_parquet(P["agg"])
 eta = pd.read_parquet(P["eta"]) if P["eta"].exists() else None
 zones_gj = json.load(open(P["geojson"])) if P["geojson"].exists() else None
 
-# Robust lookup loading (handles capitalization differences)
 lk = pd.read_csv(P["lookup"])
 cols = {c.lower(): c for c in lk.columns}
 loc_col = cols.get("locationid") or cols.get("location_id")
@@ -72,7 +71,7 @@ else:
     model = mdl_obj
     feature_cols = ["hour", "dow", "month", "is_weekend", "pulocationid", "demand", "supply", "gap"]
 
-# ---------------- SQLite logging ----------------
+# SQLite logging
 DB_PATH = DATA_DIR / "events.db"
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -123,7 +122,7 @@ def export_events():
     except Exception:
         return None
 
-# ---------------- Helpers ----------------
+# Helpers
 def is_weekend(dow):
     # DOW: 0=Sun .. 6=Sat
     return 1 if dow in (0, 6) else 0
@@ -137,7 +136,7 @@ def accept_prob(price, base):
     p = 0.95 - 0.7 * (1 / (1 + np.exp(-4 * rel)))
     return float(np.clip(p, 0.05, 0.95))
 
-# ---------------- SHAP (robust) ----------------
+# SHAP
 def _make_shap_explainer(m):
     try:
         expl = shap.TreeExplainer(m, feature_names=feature_cols, model_output="raw")
@@ -199,7 +198,7 @@ def shap_bar_np(feature_row: pd.DataFrame):
         print("FI fallback error:", e)
     return None
 
-# ---------------- Heatmap ----------------
+# Heatmap
 def _detect_locid_key(gj: dict) -> str:
     props = gj["features"][0]["properties"].keys()
     candidates = [
@@ -236,7 +235,6 @@ def heatmap_html():
         legend_name="Average pressure (dataset)"
     ).add_to(m)
 
-    # Optional tooltip (Zone/Borough if present)
     try:
         from folium.features import GeoJson, GeoJsonTooltip
         props0 = zones_gj["features"][0]["properties"]
@@ -255,7 +253,7 @@ def heatmap_html():
 
     return m._repr_html_()
 
-# ---------------- Core recommend ----------------
+# Core recommend
 def recommend(loc_id, hour, dow, month, use_latest, demand_manual, supply_manual):
     try:
         pulocationid = int(loc_id)
@@ -382,7 +380,7 @@ def recommend(loc_id, hour, dow, month, use_latest, demand_manual, supply_manual
         }])
         return empty, err, "", err, None
 
-# ---------------- UI ----------------
+# UI
 def now_defaults():
     now = datetime.utcnow()
     py_dow = now.weekday()    # Mon=0..Sun=6
